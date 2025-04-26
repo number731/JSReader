@@ -1,10 +1,10 @@
-# JS Endpoint Finder
+# jsreader
 
 A powerful Go-based tool that analyzes JavaScript files to discover endpoints, API URLs, tokens, and other sensitive information that might be exposed in client-side code.
 
 ## Features
 
-JS Endpoint Finder can detect various types of sensitive information:
+jsreader can detect various types of sensitive information:
 
 - **S3 Buckets** - Potential public AWS S3 bucket URLs
 - **Firebase Resources**:
@@ -26,24 +26,22 @@ JS Endpoint Finder can detect various types of sensitive information:
 ### Using Go Install
 
 ```bash
-# Install directly using Go
-go install github.com/yourusername/js-endpoint-finder@latest
+go install github.com/number731/jsreader@latest
 ```
 
 ### Manual Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/js-endpoint-finder.git
+git clone https://github.com/number731/jsreader.git
 
 # Change to the project directory
-cd js-endpoint-finder
+cd jsreader
 
 # Build the executable
-go build -o js-endpoint-finder
+go build -o jsreader.go
 
 # Optional: Move to a directory in your PATH
-sudo mv js-endpoint-finder /usr/local/bin/
+sudo mv jsreader /usr/local/bin/
 ```
 
 ## Usage
@@ -52,7 +50,7 @@ JS Endpoint Finder provides several options for analyzing JavaScript files:
 
 ```
 Usage:
-  js-endpoint-finder [options]
+  jsreader [options]
 
 Options:
   -t int     Number of threads to use (default 1)
@@ -66,36 +64,33 @@ Options:
 
 **Analyze a single local JavaScript file:**
 ```bash
-js-endpoint-finder -f /path/to/script.js
+jsreader -f /path/to/script.js
 ```
 
 **Analyze a remote JavaScript file:**
 ```bash
-js-endpoint-finder -f https://example.com/script.js
+jsreader -f https://example.com/script.js
 ```
 
 **Process multiple JavaScript files from a list:**
 ```bash
-js-endpoint-finder -i urls.txt -t 5
+jsreader -i urls.txt -t 5
 ```
 
 **Process data from pipe:**
 ```bash
-cat urls.txt | js-endpoint-finder -p
+cat urls.txt | jsreader -p
 ```
 
 **Save results to a file:**
 ```bash
-js-endpoint-finder -i urls.txt -o results.txt
+jsreader -i urls.txt -o results.txt
 ```
 
 **Combine with other tools:**
 ```bash
-# Find JavaScript files with httpx and analyze them
-cat domains.txt | httpx -silent -path "/main.js" | js-endpoint-finder -p
+cat domains.txt | katana -d 5 -jc | grep '\.js$' | jsreader -p
 
-# Combine with subdomains and JavaScript discovery tools
-subfinder -d example.com | httpx -silent | getJS | js-endpoint-finder -p
 ```
 
 ## Example Output
