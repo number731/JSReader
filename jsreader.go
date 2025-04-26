@@ -22,10 +22,10 @@ const (
 	colorPurple  = "\033[35m"
 	colorCyan    = "\033[36m"
 	colorWhite   = "\033[37m"
-	colorOrange  = "\033[38;5;208m" // Added for Telegram Tokens
-	colorTeal    = "\033[38;5;6m"   // Added for API Subdomain
-	colorPink    = "\033[38;5;13m"  // Added for API Version
-	colorMagenta = "\033[35m"       // Added for API Components
+	colorOrange  = "\033[38;5;208m"
+	colorTeal    = "\033[38;5;6m" 
+	colorPink    = "\033[38;5;13m" 
+	colorMagenta = "\033[35m"  
 )
 
 var (
@@ -96,7 +96,6 @@ func (p *SafePrinter) PrintResult(result Result) {
 		prefix = result.Type
 	}
 
-	// Вывод в консоль
 	fmt.Printf("%s[%s]%s %s%s%s\n",
 		color, prefix, colorReset,
 		colorWhite, result.URL, colorReset)
@@ -113,7 +112,6 @@ func (p *SafePrinter) PrintResult(result Result) {
 		fmt.Println()
 	}
 
-	// Запись в файл
 	if p.outputFH != nil {
 		p.fileMu.Lock()
 		defer p.fileMu.Unlock()
@@ -162,7 +160,6 @@ func main() {
 	flag.StringVar(&outputFile, "o", "", "Output file to save results (.txt)")
 	flag.Parse()
 
-	// Открываем файл для записи результатов
 	if outputFile != "" {
 		fh, err := os.Create(outputFile)
 		if err != nil {
@@ -172,7 +169,6 @@ func main() {
 		printer.outputFH = fh
 		defer printer.CloseOutput()
 
-		// Записываем заголовок в файл
 		_, err = fh.WriteString("=== JS Parser Results ===\n\n")
 		if err != nil {
 			printer.PrintError("Output", fmt.Sprintf("Failed to write to output file: %v", err))
@@ -361,7 +357,6 @@ func analyzeJSFile(jsURL string, resultsChan chan<- Result) {
 		}
 	}
 
-	// Extract API versions from URLs for more comprehensive matching
 	apiVersionRe := regexp.MustCompile(`https?://[^/]+/v([0-9]+(\.[0-9]+)?)/`)
 	apiVersionMatches := apiVersionRe.FindAllStringSubmatch(jsContent, -1)
 	for _, match := range apiVersionMatches {
@@ -372,7 +367,6 @@ func analyzeJSFile(jsURL string, resultsChan chan<- Result) {
 		}
 	}
 
-	// Look for Telegram bot token patterns in specific contexts
 	telegramContextRe := regexp.MustCompile(`(bot|token|api|key)[\s]*[=:][\s]*["']([0-9]{8,10}:[a-zA-Z0-9_-]{35})["']`)
 	telegramContextMatches := telegramContextRe.FindAllStringSubmatch(jsContent, -1)
 	for _, match := range telegramContextMatches {
@@ -387,7 +381,6 @@ func analyzeJSFile(jsURL string, resultsChan chan<- Result) {
 		regexp.MustCompile(`let\s+[a-zA-Z0-9_]+\s*=\s*["'](https?://[^"'\s]+)["']`),
 		regexp.MustCompile(`var\s+[a-zA-Z0-9_]+\s*=\s*["'](https?://[^"'\s]+)["']`),
 		regexp.MustCompile(`[a-zA-Z0-9_]+\s*:\s*["'](https?://[^"'\s]+)["']`),
-		// Additional patterns for API endpoints in variables
 		regexp.MustCompile(`(url|endpoint|api|baseUrl|apiUrl|baseURL|apiURL)\s*[=:]\s*["'](https?://[^"'\s]+)["']`),
 		regexp.MustCompile(`(url|endpoint|api|baseUrl|apiUrl|baseURL|apiURL)\s*[=:]\s*["'](\/[^"'\s]+)["']`),
 	}
@@ -401,7 +394,6 @@ func analyzeJSFile(jsURL string, resultsChan chan<- Result) {
 		}
 	}
 
-	// Look for API endpoints in object definitions
 	apiObjectPatterns := []*regexp.Regexp{
 		regexp.MustCompile(`endpoints\s*:\s*\{\s*[^}]*["']([^"']+)["']\s*:\s*["']([^"']+)["']`),
 		regexp.MustCompile(`api\s*:\s*\{\s*[^}]*["']([^"']+)["']\s*:\s*["']([^"']+)["']`),
@@ -413,7 +405,6 @@ func analyzeJSFile(jsURL string, resultsChan chan<- Result) {
 		for _, match := range matches {
 			if len(match) > 2 {
 				endpoint := match[2]
-				// Check if it's a full URL or just a path
 				if strings.HasPrefix(endpoint, "http") {
 					reportFinding("API Component", endpoint, "API endpoint found in object definition - "+match[1])
 				} else if strings.HasPrefix(endpoint, "/") {
@@ -423,7 +414,6 @@ func analyzeJSFile(jsURL string, resultsChan chan<- Result) {
 		}
 	}
 
-	// Find API versions mentioned in comments or code documentation
 	apiVersionCommentRe := regexp.MustCompile(`\/\/.*\b(v[0-9]+(\.[0-9]+)?)\b.*api`)
 	apiVersionCommentMatches := apiVersionCommentRe.FindAllStringSubmatch(jsContent, -1)
 	for _, match := range apiVersionCommentMatches {
@@ -432,7 +422,6 @@ func analyzeJSFile(jsURL string, resultsChan chan<- Result) {
 		}
 	}
 
-	// Find API domains in fetch/axios/ajax/request calls
 	apiCallPatterns := []*regexp.Regexp{
 		regexp.MustCompile(`(fetch|axios\.get|axios\.post|ajax|request)\s*\(\s*["'](https?://[^"'\s]+)["']`),
 		regexp.MustCompile(`\.(get|post|put|delete|patch)\s*\(\s*["'](https?://[^"'\s]+)["']`),
@@ -444,7 +433,6 @@ func analyzeJSFile(jsURL string, resultsChan chan<- Result) {
 		for _, match := range matches {
 			if len(match) > 2 {
 				endpoint := match[2]
-				// Check for API identifiers
 				if strings.Contains(endpoint, "/api/") ||
 					strings.Contains(endpoint, "/v1/") ||
 					strings.Contains(endpoint, "/v2/") ||
@@ -468,7 +456,6 @@ func fetchRemoteJS(jsURL string) ([]byte, error) {
 		return nil, fmt.Errorf("error creating request: %w", err)
 	}
 
-	// Add user agent to avoid being blocked
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
 
 	resp, err := client.Do(req)
