@@ -1,6 +1,6 @@
 # jsreader
 
-A powerful Go-based tool that analyzes JavaScript files to discover endpoints, API URLs, tokens, and other sensitive information that might be exposed in client-side code.
+A powerful Go-based tool that analyzes JavaScript files to discover endpoints, API URLs, tokens, and other sensitive information that might be exposed in client-side code. Special thanks for Timoria and RIGOLIT.
 
 ## Features
 
